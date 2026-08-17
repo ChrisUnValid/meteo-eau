@@ -4,6 +4,7 @@
 	import { app, fmtPct, fmtTemp, vigiOf, THIS_YEAR } from '$lib/state.svelte.js';
 	import { joursAt, lerpSeries, MAX_JOURS } from '$lib/data/archetypes.js';
 	import { archOf } from '$lib/data/france.js';
+	import { bulletinPhrase, duelPhrase } from '$lib/data/phrases.js';
 	import Coupe from './Coupe.svelte';
 
 	let { onshare } = $props();
@@ -15,6 +16,11 @@
 	const aB = $derived(app.compare ? archOf(app.compare.dept) : null);
 	const jB = $derived(aB ? joursAt(aB, app.year) : 0);
 	const lvlB = $derived(vigiOf(jB));
+	const phrase = $derived(
+		app.compare
+			? duelPhrase(a, aB, app.year, app.communeName, app.compare.name)
+			: bulletinPhrase(a, app.year, app.communeName, app.birth, THIS_YEAR)
+	);
 </script>
 
 <div class="card">
@@ -27,6 +33,8 @@
 	<div class="arch">
 		{app.compare ? 'duel de communes · projections types' : `projection type · ${a.label}`}
 	</div>
+
+	<div class="phrase">🎙 {phrase}</div>
 
 	{#if !app.compare}
 		<div class="heronum">
@@ -92,6 +100,11 @@
 	}
 	.loc { font-size: 11px; letter-spacing: 1.8px; color: #6f8898; text-transform: uppercase; }
 	.arch { font-size: 11px; color: #4f6a7b; margin-top: 3px; font-style: italic; }
+	.phrase {
+		margin-top: 11px; padding: 9px 12px; border-left: 3px solid #35c4b5; border-radius: 0 8px 8px 0;
+		background: rgba(53, 196, 181, 0.07); font-size: 13px; font-style: italic;
+		color: #cfe0e9; line-height: 1.55;
+	}
 	.agebadge {
 		display: inline-block; margin-left: 7px; background: #1b2b36; color: #35c4b5;
 		font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 10px;

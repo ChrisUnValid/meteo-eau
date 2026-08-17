@@ -8,7 +8,8 @@ Entre ton code postal et ton année de naissance : tu obtiens le bulletin de ton
 combien de jours sans arroser l'été de tes 75 ans, où en sera la nappe, quel sera le débit
 des rivières — présenté comme une météo, pas comme un rapport hydrologique.
 
-- 🌍 **Globe 3D** du stress hydrique mondial (three.js), pays cliquables, rotation en pause d'un clic
+- 🌍 **Globe vectoriel** du stress hydrique mondial (SVG, projection orthographique D3 — net à toutes les tailles), pays cliquables, rotation en pause d'un clic
+- 🎙 **Phrases « présentateur »** : ~17 gabarits pilotés par seuils (vigilance × époque × événements), déterministes
 - 🇫🇷 **Carte de France** par départements, infobulle, clic pour changer de territoire
 - ⏳ **Timeline 1975 → 2075** ancrée sur *ta* vie (« l'année de tes 10 ans », « toi à 75 ans »)
 - ⚡ **Duel de communes** : compare ton eau à celle d'une autre commune
@@ -62,7 +63,7 @@ le nom de commune personnalise le titre, pas la donnée.
 
 ## Stack
 
-SvelteKit (Svelte 5, adapter-static) · D3 · three.js
+SvelteKit (Svelte 5, adapter-static) · D3 — zéro WebGL, zéro backend
 
 ---
 
