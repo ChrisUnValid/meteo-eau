@@ -1,15 +1,14 @@
 // Fusion observations réelles / projections — le cœur de l'acte 2.
 //
-// Passé   : observations Hub'Eau quand elles existent pour le département
-//           (débits d'été en % vs référence 1975-2005, nappes en indice
-//           percentile type IPS, écart au médian ±50).
-// Futur   : ordres de grandeur Explore2 portés par l'archétype, RACCORDÉS à la
-//           moyenne des 5 dernières années observées — pas de saut au passage
-//           observé → projeté.
+// Passé   : observations Hub'Eau (débits d'été en % vs référence 1975-2005,
+//           nappes en indice percentile type IPS) et arrêtés réels VigiEau
+//           pour les jours de restriction (2012 →).
+// Futur   : débits = vraies projections locales Explore2 (indicateur
+//           delta-QMNA_summer, médiane de 36 chaînes de modélisation, par
+//           département) ; nappes et jours = ordres de grandeur de l'archétype.
+//           Dans les deux cas la courbe est RACCORDÉE à la moyenne des
+//           5 dernières années observées — pas de saut au passage observé → projeté.
 // Repli   : archétype seul si le département n'a pas de données réelles.
-//
-// ⚠ Dette : l'ingestion des 540 chaînes NetCDF Explore2 par secteur
-// (doi:10.57745/8CZUWN) remplacera l'ancrage par les vraies trajectoires locales.
 
 import { DEPT_TO_ARCH, joursAt, lerpSeries } from './archetypes.js';
 
@@ -32,6 +31,19 @@ export async function loadReal(fetchFn = fetch) {
 export const realGeneratedOn = () => GENERATED;
 export const realFor = (dept) => REAL[dept] || null;
 
+// Trajectoire Explore2 locale : interpolation entre la référence 1976-2005 (0 %)
+// et les 3 horizons (centres 2035 / 2055 / 2085), pour la médiane et l'enveloppe.
+const H_YEARS = [1990, 2035, 2055, 2085];
+function explore2At(e, year, key = 'med') {
+	const pts = [0, e.H1[key], e.H2[key], e.H3[key]];
+	if (year <= H_YEARS[0]) return 0;
+	if (year >= H_YEARS[3]) return pts[3];
+	let i = 0;
+	while (i < 2 && H_YEARS[i + 1] <= year) i++;
+	const t = (year - H_YEARS[i]) / (H_YEARS[i + 1] - H_YEARS[i]);
+	return pts[i] + (pts[i + 1] - pts[i]) * t;
+}
+
 /**
  * Les chiffres du bulletin pour un département et une année.
  * `observed.nappe` / `observed.debit` disent, métrique par métrique, si la
@@ -48,6 +60,8 @@ export function statsAt(dept, year) {
 		temp: lerpSeries(arch.series.temp, year),
 		observed: { nappe: false, debit: false, jours: false },
 		anchored: false,
+		explore2: false,
+		band: null, // enveloppe q10-q90 des 36 chaînes Explore2, en projection
 		stations: real ? real.stations : null
 	};
 	if (!real) return out;
@@ -67,15 +81,28 @@ export function statsAt(dept, year) {
 		if (n != null) { out.nappe = n; out.observed.nappe = true; }
 		if (d != null) { out.debit = d; out.observed.debit = true; }
 	} else {
-		// futur ancré : baseline observée + delta de l'archétype depuis lastYear
+		// futur ancré : baseline observée + delta depuis lastYear
 		const aN = lerpSeries(arch.series.nappe, real.lastYear);
-		const aD = lerpSeries(arch.series.debit, real.lastYear);
 		if (real.baseline?.nappe != null) {
 			out.nappe = clamp(real.baseline.nappe + (out.nappe - aN), -50, 50);
 			out.anchored = true;
 		}
 		if (real.baseline?.debit != null) {
-			out.debit = clamp(real.baseline.debit + (out.debit - aD), -85, 60);
+			if (real.explore2) {
+				// vraie trajectoire locale Explore2 (médiane de 36 chaînes)
+				const e = real.explore2;
+				const d0 = explore2At(e, real.lastYear);
+				const shift = real.baseline.debit - d0;
+				out.debit = clamp(explore2At(e, year) + shift, -95, 60);
+				out.band = {
+					lo: clamp(explore2At(e, year, 'q10') + shift, -95, 60),
+					hi: clamp(explore2At(e, year, 'q90') + shift, -95, 60)
+				};
+				out.explore2 = true;
+			} else {
+				const aD = lerpSeries(arch.series.debit, real.lastYear);
+				out.debit = clamp(real.baseline.debit + (out.debit - aD), -85, 60);
+			}
 			out.anchored = true;
 		}
 	}

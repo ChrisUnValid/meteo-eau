@@ -20,7 +20,12 @@
 	const lvlB = $derived(vigiOf(jB));
 	const isObs = $derived(stats.observed.nappe || stats.observed.debit || stats.observed.jours);
 	const provenance = $derived.by(() => {
-		if (!isObs) return stats.anchored ? 'projection ancrée sur l’observé' : 'projection type';
+		if (!isObs)
+			return stats.explore2
+				? 'projection locale Explore2 · 36 chaînes'
+				: stats.anchored
+					? 'projection ancrée sur l’observé'
+					: 'projection type';
 		const src = [];
 		if (stats.observed.nappe || stats.observed.debit)
 			src.push(`Hub'Eau (${(stats.stations?.debit || 0) + (stats.stations?.nappe || 0)} stations)`);
@@ -70,8 +75,17 @@
 				<div class="v">{fmtPct(stats.nappe)}</div>
 			</div>
 			<div class="g">
-				<div class="l">Débit été {#if stats.observed.debit}<i class="dot" title="mesuré (Hub'Eau)"></i>{/if}</div>
+				<div class="l">
+					Débit été
+					{#if stats.observed.debit}<i class="dot" title="mesuré (Hub'Eau)"></i>
+					{:else if stats.explore2}<span class="sub">moy. 30 ans</span>{/if}
+				</div>
 				<div class="v">{fmtPct(stats.debit)}</div>
+				{#if stats.band}
+					<div class="band" title="enveloppe des 36 chaînes de modélisation Explore2 — les années sèches isolées sortent de cette fourchette">
+						{fmtPct(stats.band.lo)} … {fmtPct(stats.band.hi)}
+					</div>
+				{/if}
 			</div>
 			<div class="g"><div class="l">Temp.</div><div class="v t">{fmtTemp(stats.temp)}</div></div>
 		</div>
@@ -154,6 +168,8 @@
 	.g .l { font-size: 9px; letter-spacing: 1px; color: #6f8898; text-transform: uppercase; }
 	.g .v { font-size: 18px; font-weight: 800; margin-top: 3px; color: #ffb347; font-variant-numeric: tabular-nums; }
 	.g .v.t { color: #ff6b6b; }
+	.g .band { font-size: 9px; color: #5f7d8e; margin-top: 2px; letter-spacing: 0.2px; }
+	.g .sub { display: block; font-size: 8px; color: #52697a; letter-spacing: 0.3px; margin-top: 1px; }
 
 	.duelgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; margin-top: 10px; }
 	.duelcol .who {
