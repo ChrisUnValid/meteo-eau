@@ -2,6 +2,8 @@
 
 **Le bulletin météo personnel de ton eau, 1975 → 2075.**
 
+**➜ En ligne : [meteo-eau.vercel.app](https://meteo-eau.vercel.app)**
+
 Entre ton code postal et ton année de naissance : tu obtiens le bulletin de ton eau —
 combien de jours sans arroser l'été de tes 75 ans, où en sera la nappe, quel sera le débit
 des rivières — présenté comme une météo, pas comme un rapport hydrologique.
