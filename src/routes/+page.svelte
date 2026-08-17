@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { app, geo, Y0, SPAN } from '$lib/state.svelte.js';
 	import { rewindWorld, countHighStress } from '$lib/data/world.js';
+	import { loadReal } from '$lib/data/series.js';
 	import Globe from '$lib/components/Globe.svelte';
 	import FranceMap from '$lib/components/FranceMap.svelte';
 	import InputsPanel from '$lib/components/InputsPanel.svelte';
@@ -16,7 +17,8 @@
 	onMount(async () => {
 		const [depts, world] = await Promise.all([
 			fetch('/data/depts.geojson').then((r) => r.json()),
-			fetch('/data/world.geojson').then((r) => r.json())
+			fetch('/data/world.geojson').then((r) => r.json()),
+			loadReal() // observations Hub'Eau — repli silencieux sur l'archétype si absent
 		]);
 		geo.DEPTS = depts;
 		geo.WORLD = rewindWorld(world);
@@ -112,10 +114,10 @@
 	<Timeline />
 
 	<div class="src">
-		Projection simulée, calibrée sur
-		<a href="https://www.drias-eau.fr" target="_blank" rel="noreferrer">Explore2 (INRAE / Météo-France)</a>
-		et
+		Passé : mesures observées
 		<a href="https://hubeau.eaufrance.fr" target="_blank" rel="noreferrer">Hub'Eau</a>
+		· futur : projection calibrée
+		<a href="https://www.drias-eau.fr" target="_blank" rel="noreferrer">Explore2 (INRAE / Météo-France)</a>
 		— <a href="https://github.com/ChrisUnValid/meteo-eau#doù-viennent-ces-chiffres-" target="_blank" rel="noreferrer">d'où viennent ces chiffres&nbsp;?</a>
 	</div>
 

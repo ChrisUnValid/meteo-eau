@@ -2,24 +2,34 @@
 	// Le bulletin : chiffre héros + vigilance en solo, duel à deux colonnes en comparaison,
 	// coupe de la nappe, « Et maintenant ? », bouton carte de partage.
 	import { app, fmtPct, fmtTemp, vigiOf, THIS_YEAR } from '$lib/state.svelte.js';
-	import { joursAt, lerpSeries, MAX_JOURS } from '$lib/data/archetypes.js';
+	import { MAX_JOURS } from '$lib/data/archetypes.js';
 	import { archOf } from '$lib/data/france.js';
+	import { statsAt } from '$lib/data/series.js';
 	import { bulletinPhrase, duelPhrase } from '$lib/data/phrases.js';
 	import Coupe from './Coupe.svelte';
 
 	let { onshare } = $props();
 
 	const a = $derived(archOf(app.dept));
-	const j = $derived(joursAt(a, app.year));
+	const stats = $derived(statsAt(app.dept, app.year));
+	const j = $derived(stats.jours);
 	const lvl = $derived(vigiOf(j));
 	const age = $derived(app.year - app.birth);
-	const aB = $derived(app.compare ? archOf(app.compare.dept) : null);
-	const jB = $derived(aB ? joursAt(aB, app.year) : 0);
+	const statsB = $derived(app.compare ? statsAt(app.compare.dept, app.year) : null);
+	const jB = $derived(statsB ? statsB.jours : 0);
 	const lvlB = $derived(vigiOf(jB));
+	const isObs = $derived(stats.observed.nappe || stats.observed.debit);
+	const provenance = $derived(
+		isObs
+			? `données observées · Hub'Eau (${(stats.stations?.debit || 0) + (stats.stations?.nappe || 0)} stations)`
+			: stats.anchored
+				? 'projection ancrée sur l’observé'
+				: 'projection type'
+	);
 	const phrase = $derived(
 		app.compare
-			? duelPhrase(a, aB, app.year, app.communeName, app.compare.name)
-			: bulletinPhrase(a, app.year, app.communeName, app.birth, THIS_YEAR)
+			? duelPhrase(stats, statsB, app.year, app.communeName, app.compare.name)
+			: bulletinPhrase(stats, app.year, app.communeName, app.birth, THIS_YEAR)
 	);
 </script>
 
@@ -30,8 +40,8 @@
 			{age < 0 ? 'avant toi' : age === 0 ? 'ta naissance' : `${age} ans`}
 		</span>
 	</div>
-	<div class="arch">
-		{app.compare ? 'duel de communes · projections types' : `projection type · ${a.label}`}
+	<div class="arch" class:obs={isObs}>
+		{app.compare ? `duel de communes · ${provenance}` : `${provenance} · ${a.label}`}
 	</div>
 
 	<div class="phrase">🎙 {phrase}</div>
@@ -54,9 +64,15 @@
 			</div>
 		</div>
 		<div class="gauges">
-			<div class="g"><div class="l">Nappe</div><div class="v">{fmtPct(lerpSeries(a.series.nappe, app.year))}</div></div>
-			<div class="g"><div class="l">Débit été</div><div class="v">{fmtPct(lerpSeries(a.series.debit, app.year))}</div></div>
-			<div class="g"><div class="l">Temp.</div><div class="v t">{fmtTemp(lerpSeries(a.series.temp, app.year))}</div></div>
+			<div class="g">
+				<div class="l">Nappe {#if stats.observed.nappe}<i class="dot" title="mesuré (Hub'Eau)"></i>{/if}</div>
+				<div class="v">{fmtPct(stats.nappe)}</div>
+			</div>
+			<div class="g">
+				<div class="l">Débit été {#if stats.observed.debit}<i class="dot" title="mesuré (Hub'Eau)"></i>{/if}</div>
+				<div class="v">{fmtPct(stats.debit)}</div>
+			</div>
+			<div class="g"><div class="l">Temp.</div><div class="v t">{fmtTemp(stats.temp)}</div></div>
 		</div>
 	{:else}
 		<div class="duelgrid">
@@ -65,18 +81,18 @@
 				<div class="dn">{j}</div>
 				<div class="du">jours sans arroser</div>
 				<div class="minibar"><i style="width:{Math.min(100, (j / MAX_JOURS) * 100)}%; background:{lvl[1]}"></i></div>
-				<div class="dv"><span>Nappe</span><b>{fmtPct(lerpSeries(a.series.nappe, app.year))}</b></div>
-				<div class="dv"><span>Débit été</span><b>{fmtPct(lerpSeries(a.series.debit, app.year))}</b></div>
-				<div class="dv"><span>Temp.</span><b>{fmtTemp(lerpSeries(a.series.temp, app.year))}</b></div>
+				<div class="dv"><span>Nappe{#if stats.observed.nappe}<i class="dot"></i>{/if}</span><b>{fmtPct(stats.nappe)}</b></div>
+				<div class="dv"><span>Débit été{#if stats.observed.debit}<i class="dot"></i>{/if}</span><b>{fmtPct(stats.debit)}</b></div>
+				<div class="dv"><span>Temp.</span><b>{fmtTemp(stats.temp)}</b></div>
 			</div>
 			<div class="duelcol b">
 				<div class="who">{app.compare.name}</div>
 				<div class="dn">{jB}</div>
 				<div class="du">jours sans arroser</div>
 				<div class="minibar"><i style="width:{Math.min(100, (jB / MAX_JOURS) * 100)}%; background:{lvlB[1]}"></i></div>
-				<div class="dv"><span>Nappe</span><b>{fmtPct(lerpSeries(aB.series.nappe, app.year))}</b></div>
-				<div class="dv"><span>Débit été</span><b>{fmtPct(lerpSeries(aB.series.debit, app.year))}</b></div>
-				<div class="dv"><span>Temp.</span><b>{fmtTemp(lerpSeries(aB.series.temp, app.year))}</b></div>
+				<div class="dv"><span>Nappe{#if statsB.observed.nappe}<i class="dot"></i>{/if}</span><b>{fmtPct(statsB.nappe)}</b></div>
+				<div class="dv"><span>Débit été{#if statsB.observed.debit}<i class="dot"></i>{/if}</span><b>{fmtPct(statsB.debit)}</b></div>
+				<div class="dv"><span>Temp.</span><b>{fmtTemp(statsB.temp)}</b></div>
 			</div>
 		</div>
 	{/if}
@@ -100,6 +116,12 @@
 	}
 	.loc { font-size: 11px; letter-spacing: 1.8px; color: #6f8898; text-transform: uppercase; }
 	.arch { font-size: 11px; color: #4f6a7b; margin-top: 3px; font-style: italic; }
+	.arch.obs { color: #35c4b5; }
+	.dot {
+		display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+		background: #35c4b5; margin-left: 4px; vertical-align: middle;
+		box-shadow: 0 0 5px rgba(53, 196, 181, 0.9);
+	}
 	.phrase {
 		margin-top: 11px; padding: 9px 12px; border-left: 3px solid #35c4b5; border-radius: 0 8px 8px 0;
 		background: rgba(53, 196, 181, 0.07); font-size: 13px; font-style: italic;

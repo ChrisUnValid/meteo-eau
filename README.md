@@ -27,31 +27,42 @@ Build statique (`npm run build`) — le site est 100 % statique, déployable sur
 
 ## D'où viennent ces chiffres ?
 
-**Toutes les valeurs affichées sont des projections simulées**, calibrées sur les ordres de
-grandeur publiés par la science publique française :
+**Passé (1975 → aujourd'hui) : des mesures observées.** Le pipeline
+`scripts/build-data.mjs` interroge les API publiques [Hub'Eau](https://hubeau.eaufrance.fr)
+et produit `static/data/real.json`, embarqué dans le site :
 
-- **Futur** : [Explore2](https://www.drias-eau.fr) (INRAE / Météo-France) — projections
-  hydrologiques jusqu'à 2100 pour 187 secteurs hydrographiques. Ordres de grandeur retenus :
-  débits d'été −20 % national en 2100, jusqu'à −40 % dans le Sud-Ouest, recharge des nappes
-  en baisse au sud-est.
-- **Passé** : tendances [Hub'Eau](https://hubeau.eaufrance.fr) (piézométrie, hydrométrie).
-- **Monde** : indice simulé inspiré des catégories du
-  [WRI Aqueduct](https://www.wri.org/aqueduct), calibré sur « 51 pays sur 164 en stress
-  hydrique élevé en 2050 ».
+- **Débits d'été** : stations hydrométriques aux plus longues chroniques de chaque
+  département (héritage Banque Hydro), moyenne des débits mensuels juin-août par année,
+  exprimée en % d'écart à la référence 1975-2005 de la station, médiane entre stations.
+- **Nappes** : piézomètres aux chroniques les plus longues, moyenne annuelle du niveau
+  convertie en percentile dans l'historique de la station (indice type IPS), exprimée en
+  écart au médian (±50), moyenne entre stations.
 
-La France métropolitaine est couverte par **10 archétypes hydro-climatiques**
-(`src/lib/data/archetypes.js`) mappant les 96 départements — couverture totale vérifiée.
-Deux communes voisines du même archétype affichent les mêmes chiffres : c'est assumé,
-le nom de commune personnalise le titre, pas la donnée.
+Un point turquoise ● dans le bulletin marque chaque valeur mesurée. Régénérer :
+`node scripts/build-data.mjs`.
 
-## Dette d'acte 2 (avant toute prétention à l'exactitude locale)
+**Futur : une projection raccordée à l'observé.** Les trajectoires suivent les ordres de
+grandeur publiés par [Explore2](https://www.drias-eau.fr) (INRAE / Météo-France — débits
+d'été −20 % national en 2100, −40 % Sud-Ouest, recharge en baisse au sud-est), portées par
+**10 archétypes hydro-climatiques** (`src/lib/data/archetypes.js`), et **ancrées sur la
+moyenne des 5 dernières années observées** du département : pas de saut au passage
+observé → projeté.
 
-1. Remplacer les archétypes simulés par les vraies séries : Hub'Eau (passé) + les
-   187 secteurs Explore2/DRIAS-Eau (futur).
-2. Remplacer l'indice mondial simulé par les données WRI Aqueduct réelles par pays.
-3. Compléter les noms de pays FR (~95 couverts, repli anglais).
-4. Carte OG côté serveur (edge function) pour que le partage social affiche la carte
-   sans action de l'utilisateur.
+**Toujours simulé** : les jours de restriction (construction narrative de l'archétype,
+les arrêtés historiques ne sont pas intégrés), l'indice mondial (inspiré des catégories
+[WRI Aqueduct](https://www.wri.org/aqueduct), calibré sur « 51 pays sur 164 en stress
+élevé en 2050 »), et tout département sans données réelles suffisantes (repli archétype).
+
+## Dette d'acte 2 restante
+
+1. Ingérer les vraies trajectoires locales Explore2 par secteur : indicateurs de
+   changement des 540 chaînes de modélisation
+   ([doi:10.57745/8CZUWN](https://doi.org/10.57745/8CZUWN), NetCDF, licence Etalab) —
+   remplacera l'ancrage par archétype.
+2. Intégrer l'historique réel des arrêtés de restriction (Propluvia/VigiEau).
+3. Remplacer l'indice mondial simulé par les données WRI Aqueduct réelles par pays.
+4. Compléter les noms de pays FR (~95 couverts, repli anglais).
+5. Carte OG côté serveur (edge function) pour le partage social sans action utilisateur.
 
 ## Données embarquées
 

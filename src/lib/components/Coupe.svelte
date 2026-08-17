@@ -3,8 +3,7 @@
 	// Clapotis animé (~15 fps), coupé par prefers-reduced-motion.
 	import { onMount } from 'svelte';
 	import { app, fmtPct, reducedMotion } from '$lib/state.svelte.js';
-	import { lerpSeries } from '$lib/data/archetypes.js';
-	import { archOf } from '$lib/data/france.js';
+	import { statsAt } from '$lib/data/series.js';
 
 	let phase = $state(0);
 
@@ -17,8 +16,8 @@
 		return d + ` L${x1},120 Z`;
 	}
 
-	const nA = $derived(lerpSeries(archOf(app.dept).series.nappe, app.year));
-	const nB = $derived(app.compare ? lerpSeries(archOf(app.compare.dept).series.nappe, app.year) : null);
+	const nA = $derived(statsAt(app.dept, app.year).nappe);
+	const nB = $derived(app.compare ? statsAt(app.compare.dept, app.year).nappe : null);
 	const yA = $derived(yOf(nA));
 	const yB = $derived(nB === null ? null : yOf(nB));
 

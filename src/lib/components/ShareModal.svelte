@@ -4,8 +4,8 @@
 	// mention de source obligatoire (règle d'honnêteté des chiffres du design doc).
 	import * as d3 from 'd3';
 	import { app, Y0, SPAN, fmtPct, fmtTemp, vigiOf } from '$lib/state.svelte.js';
-	import { joursAt, lerpSeries } from '$lib/data/archetypes.js';
-	import { archOf, deptFeature } from '$lib/data/france.js';
+	import { statsAt } from '$lib/data/series.js';
+	import { deptFeature } from '$lib/data/france.js';
 
 	let { onclose } = $props();
 	let canvas;
@@ -49,8 +49,8 @@
 		cx.fillStyle = '#e8eef2'; cx.font = '800 54px ' + F;
 		cx.fillText(`${app.communeName} · été ${y}`, 60, 212);
 
-		const arch = archOf(app.dept);
-		const j = joursAt(arch, y), v = vigiOf(j);
+		const stats = statsAt(app.dept, y);
+		const j = stats.jours, v = vigiOf(j);
 		cx.fillStyle = '#ffb347'; cx.font = '900 190px ' + F;
 		cx.fillText(j, 54, 408);
 		const w = cx.measureText(String(j)).width;
@@ -65,12 +65,18 @@
 
 		cx.fillStyle = '#b7c9d5'; cx.font = '600 25px ' + F;
 		cx.fillText(
-			`nappe ${fmtPct(lerpSeries(arch.series.nappe, y))} · débit été ${fmtPct(lerpSeries(arch.series.debit, y))} · ${fmtTemp(lerpSeries(arch.series.temp, y))}C`,
+			`nappe ${fmtPct(stats.nappe)} · débit été ${fmtPct(stats.debit)} · ${fmtTemp(stats.temp)}C`,
 			60, 552
 		);
 
+		const isObs = stats.observed.nappe || stats.observed.debit;
 		cx.fillStyle = 'rgba(232,238,242,.55)'; cx.font = '500 19px ' + F;
-		cx.fillText("Projection simulée, calibrée sur Explore2 (INRAE / Météo-France) et Hub'Eau", 60, 600);
+		cx.fillText(
+			isObs
+				? "Nappe et débit : mesures observées (Hub'Eau) · restrictions : projection calibrée Explore2"
+				: "Projection calibrée sur Explore2 (INRAE / Météo-France), ancrée sur les mesures Hub'Eau",
+			60, 600
+		);
 
 		const slug = app.communeName.toLowerCase().normalize('NFD')
 			.replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');

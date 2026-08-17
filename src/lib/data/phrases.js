@@ -3,7 +3,7 @@
 // variation par parité d'année pour éviter la répétition en tirant le slider.
 // Aucun aléatoire : même année + même commune = même phrase.
 
-import { joursAt, lerpSeries, EVENTS } from './archetypes.js';
+import { EVENTS } from './archetypes.js';
 import { fmtPct, vigiOf } from '$lib/state.svelte.js';
 
 // Accord du lieu : « à Nîmes », « au Havre », « aux Sables-d'Olonne »
@@ -27,10 +27,10 @@ function suffixAge(age, tense) {
  *  - 4 niveaux de vigilance × 3 temporalités (avec variantes sur les plus fréquents)
  *  - 1 extrême (≥ 60 jours)
  */
-export function bulletinPhrase(arch, year, commune, birth, thisYear) {
-	const j = joursAt(arch, year);
-	const nappe = fmtPct(lerpSeries(arch.series.nappe, year));
-	const debit = fmtPct(lerpSeries(arch.series.debit, year));
+export function bulletinPhrase(stats, year, commune, birth, thisYear) {
+	const j = stats.jours;
+	const nappe = fmtPct(stats.nappe);
+	const debit = fmtPct(stats.debit);
 	const lvl = vigiOf(j)[0];
 	const tense = year < thisYear ? 'past' : year === thisYear ? 'present' : 'future';
 	const age = year - birth;
@@ -43,7 +43,7 @@ export function bulletinPhrase(arch, year, commune, birth, thisYear) {
 	if (ev) {
 		if (year === 1976)
 			return `Souviens-toi de l'été 1976 : la grande sécheresse. ${j} jours sans arroser ${ici} — on pensait vivre une exception.${fin}`;
-		return `Été ${year} ${ici} : ${ev.label.toLowerCase()}. ${j} jours sans arroser — on appelait encore ça une année exceptionnelle.${fin}`;
+		return `${ev.label} — ${j} jours sans arroser ${ici}. On appelait encore ça une année exceptionnelle.${fin}`;
 	}
 
 	// Extrême : au-delà de deux mois de restrictions
@@ -89,9 +89,9 @@ export function bulletinPhrase(arch, year, commune, birth, thisYear) {
 }
 
 /** La phrase du duel — 2 gabarits selon l'écart. */
-export function duelPhrase(archA, archB, year, communeA, communeB) {
-	const jA = joursAt(archA, year);
-	const jB = joursAt(archB, year);
+export function duelPhrase(statsA, statsB, year, communeA, communeB) {
+	const jA = statsA.jours;
+	const jB = statsB.jours;
 	const ecart = Math.abs(jA - jB);
 	if (ecart <= 5)
 		return `${communeA} et ${communeB}, été ${year} : match nul ou presque — ${jA} et ${jB} jours sans arroser. Le même ciel pour tous.`;
