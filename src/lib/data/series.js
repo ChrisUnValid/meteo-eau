@@ -35,7 +35,7 @@ export const realFor = (dept) => REAL[dept] || null;
 // et les 3 horizons (centres 2035 / 2055 / 2085), pour la médiane et l'enveloppe.
 const H_YEARS = [1990, 2035, 2055, 2085];
 function explore2At(e, year, key = 'med') {
-	const pts = [0, e.H1[key], e.H2[key], e.H3[key]];
+	const pts = [0, e.H1[key] ?? 0, e.H2[key] ?? 0, e.H3[key] ?? 0];
 	if (year <= H_YEARS[0]) return 0;
 	if (year >= H_YEARS[3]) return pts[3];
 	let i = 0;
@@ -61,7 +61,13 @@ export function statsAt(dept, year) {
 		observed: { nappe: false, debit: false, jours: false },
 		anchored: false,
 		explore2: false,
-		band: null, // enveloppe q10-q90 des 36 chaînes Explore2, en projection
+		band: null, // enveloppe q10-q90 des 36 chaînes Explore2 (débit), en projection
+		// En projection, la jauge « nappe » change de grandeur : le niveau mesuré
+		// (percentile) laisse la place à la recharge potentielle estivale projetée (%).
+		// Deux quantités différentes, donc étiquetées différemment dans l'UI.
+		nappeIsRecharge: false,
+		nappeBand: null,
+		rechargeHiver: null,
 		stations: real ? real.stations : null
 	};
 	if (!real) return out;
@@ -81,11 +87,23 @@ export function statsAt(dept, year) {
 		if (n != null) { out.nappe = n; out.observed.nappe = true; }
 		if (d != null) { out.debit = d; out.observed.debit = true; }
 	} else {
-		// futur ancré : baseline observée + delta depuis lastYear
-		const aN = lerpSeries(arch.series.nappe, real.lastYear);
-		if (real.baseline?.nappe != null) {
-			out.nappe = clamp(real.baseline.nappe + (out.nappe - aN), -50, 50);
+		// Nappes : la recharge potentielle d'été projetée (Explore2 / modèle RECHARGE)
+		// remplace l'indice de niveau, sans raccordement — ce n'est pas la même grandeur.
+		if (real.recharge) {
+			out.nappe = clamp(explore2At(real.recharge.JJA, year), -95, 95);
+			out.nappeBand = {
+				lo: clamp(explore2At(real.recharge.JJA, year, 'q5'), -95, 95),
+				hi: clamp(explore2At(real.recharge.JJA, year, 'q95'), -95, 95)
+			};
+			out.rechargeHiver = Math.round(explore2At(real.recharge.DJF, year));
+			out.nappeIsRecharge = true;
 			out.anchored = true;
+		} else {
+			const aN = lerpSeries(arch.series.nappe, real.lastYear);
+			if (real.baseline?.nappe != null) {
+				out.nappe = clamp(real.baseline.nappe + (out.nappe - aN), -50, 50);
+				out.anchored = true;
+			}
 		}
 		if (real.baseline?.debit != null) {
 			if (real.explore2) {

@@ -29,8 +29,15 @@ function suffixAge(age, tense) {
  */
 export function bulletinPhrase(stats, year, commune, birth, thisYear) {
 	const j = stats.jours;
+	// en projection, la jauge « nappe » porte la recharge potentielle d'été
+	const nappeMot = stats.nappeIsRecharge ? 'recharge d’été' : 'nappe';
 	const nappe = fmtPct(stats.nappe);
 	const debit = fmtPct(stats.debit);
+	// le contraste hiver/été est LE message d'Explore2 : à dire quand il est net
+	const contraste =
+		stats.rechargeHiver != null && stats.rechargeHiver >= 5 && stats.nappe <= -15
+			? ` Il pleuvra davantage l’hiver (recharge ${fmtPct(stats.rechargeHiver)}), mais l’eau ne sera plus là l’été.`
+			: '';
 	const lvl = vigiOf(j)[0];
 	const tense = year < thisYear ? 'past' : year === thisYear ? 'present' : 'future';
 	const age = year - birth;
@@ -64,8 +71,8 @@ export function bulletinPhrase(stats, year, commune, birth, thisYear) {
 		if (tense === 'present')
 			return `${commune} passe l'été en vigilance jaune : ${j} jours sans arroser, nappe à ${nappe}. Rien de grave — pour l'instant.${fin}`;
 		return alt
-			? `En ${year} ${ici}, l'été s'annoncerait sous surveillance : ${j} jours sans arroser, une nappe à ${nappe}.${fin}`
-			: `Bulletin de l'été ${year} ${ici} : vigilance jaune probable, ${j} jours de restrictions et des rivières en baisse (${debit}).${fin}`;
+			? `En ${year} ${ici}, l'été s'annoncerait sous surveillance : ${j} jours sans arroser, ${nappeMot} à ${nappe}.${fin}${contraste}`
+			: `Bulletin de l'été ${year} ${ici} : vigilance jaune probable, ${j} jours de restrictions et des rivières en baisse (${debit}).${fin}${contraste}`;
 	}
 
 	if (lvl === 'ORANGE') {
@@ -74,8 +81,8 @@ export function bulletinPhrase(stats, year, commune, birth, thisYear) {
 		if (tense === 'present')
 			return `Vigilance orange ${ici} cet été : ${j} jours sans arroser, nappe à ${nappe}. L'arrosoir se mérite.${fin}`;
 		return alt
-			? `Été ${year} ${ici} : vigilance orange attendue. ${j} jours sans arroser, une nappe à ${nappe} — l'eau se compte.${fin}`
-			: `En ${year}, ${commune} passerait l'été en orange : ${j} jours de restrictions, des rivières à ${debit}.${fin}`;
+			? `Été ${year} ${ici} : vigilance orange attendue. ${j} jours sans arroser, ${nappeMot} à ${nappe} — l'eau se compte.${fin}${contraste}`
+			: `En ${year}, ${commune} passerait l'été en orange : ${j} jours de restrictions, des rivières à ${debit}.${fin}${contraste}`;
 	}
 
 	// ROUGE
@@ -84,8 +91,8 @@ export function bulletinPhrase(stats, year, commune, birth, thisYear) {
 	if (tense === 'present')
 		return `Alerte rouge ${ici} : ${j} jours sans arroser cet été, nappe à ${nappe}, rivières à ${debit}.${fin}`;
 	return alt
-		? `Bulletin de l'été ${year} ${ici} : alerte rouge. ${j} jours sans arroser, nappe à ${nappe} — l'arrosoir devient un souvenir.${fin}`
-		: `${commune}, été ${year} : rouge. ${j} jours sans arroser, des rivières à ${debit}. L'eau devient un budget.${fin}`;
+		? `Bulletin de l'été ${year} ${ici} : alerte rouge. ${j} jours sans arroser, ${nappeMot} à ${nappe} — l'arrosoir devient un souvenir.${fin}${contraste}`
+		: `${commune}, été ${year} : rouge. ${j} jours sans arroser, des rivières à ${debit}. L'eau devient un budget.${fin}${contraste}`;
 }
 
 /** La phrase du duel — 2 gabarits selon l'écart. */

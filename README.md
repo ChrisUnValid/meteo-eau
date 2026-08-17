@@ -60,7 +60,26 @@ après filtrage des chaînes jugées aberrantes
 q10-q90** sous la valeur. Les ~4000 points de simulation sont rattachés à leur département
 par point-dans-polygone. Couverture : 93 départements.
 
-Les nappes et les jours de restriction futurs suivent encore les ordres de grandeur des
+Pour les **nappes**, `scripts/build-recharge.mjs` ingère l'anomalie relative de **recharge
+potentielle par masse d'eau souterraine** (modèle RECHARGE,
+[doi:10.57745/F9QE5D](https://doi.org/10.57745/F9QE5D), RCP 8.5) : médiane des 17 modèles
+climatiques et enveloppe Q5-Q95, aux mêmes horizons. Les masses d'eau sont rattachées aux
+départements via les piézomètres Hub'Eau, qui déclarent leur masse d'eau — les aquifères
+projetés sont donc exactement ceux qu'on mesure par ailleurs. Couverture : 93 départements.
+
+> **La jauge change de grandeur entre passé et futur, et c'est assumé.** Le passé montre un
+> *niveau* mesuré (percentile piézométrique) ; le futur montre une *recharge potentielle*
+> (flux, en % vs 1976-2005). Deux quantités différentes — d'où l'étiquette qui passe de
+> « Nappe » à « Recharge été ». Les projections de niveaux piézométriques (AquiFR) ne
+> couvrent que quelques régions, pas la France entière.
+>
+> **Pourquoi la recharge d'été et pas l'annuelle ?** Parce que ce bulletin est un bulletin
+> d'été, comme tous ses autres indicateurs. La distinction est majeure : en 2085, la
+> recharge **annuelle** médiane est de +5 % alors que la recharge **d'été** est à −45 %.
+> L'hiver plus humide masque l'effondrement estival — c'est exactement le message
+> d'Explore2, et le bulletin le dit à voix haute plutôt que de le moyenner.
+
+Les jours de restriction futurs suivent encore les ordres de grandeur des
 **10 archétypes hydro-climatiques** (`src/lib/data/archetypes.js`).
 
 Dans tous les cas la courbe future est **raccordée à la moyenne des 5 dernières années
@@ -81,23 +100,28 @@ projection), l'indice mondial (inspiré des catégories
 
 ## Dette restante
 
-1. Projections de **nappes** locales (recharge Explore2) — aujourd'hui encore par archétype.
-2. Remplacer l'indice mondial simulé par les données WRI Aqueduct réelles par pays.
-3. Compléter les noms de pays FR (~95 couverts, repli anglais).
-4. Carte OG côté serveur (edge function) pour le partage social sans action utilisateur.
+1. Remplacer l'indice mondial simulé par les données WRI Aqueduct réelles par pays.
+2. Compléter les noms de pays FR (~95 couverts, repli anglais).
+3. Carte OG côté serveur (edge function) pour le partage social sans action utilisateur.
+4. Jours de restriction projetés : encore par archétype (les arrêtés ne se projettent pas,
+   il faudrait un modèle reliant étiage et décision préfectorale).
 
 ## Régénérer les données
 
 ```bash
 node scripts/build-data.mjs                              # Hub'Eau (débits, nappes)
 python3 scripts/build-restrictions.py <historique.zip>   # arrêtés VigiEau
-node scripts/build-explore2.mjs <dir>                    # projections Explore2
+node scripts/build-explore2.mjs <dir>                    # projections de débits
+node scripts/build-recharge.mjs <dir-dbf>                # projections de recharge
 ```
 
 Le dernier attend dans `<dir>` : `qmna/*.parquet` (les 108 fichiers `delta-QMNA_summer` de
 [E7LHGT](https://doi.org/10.57745/E7LHGT)), `stations_explore2.tab`
 ([UTKWR5](https://doi.org/10.57745/UTKWR5)) et `outliers.tab`
 ([YZNENQ](https://doi.org/10.57745/YZNENQ)). Lecture parquet : `npm i --no-save hyparquet`.
+Le dernier attend les 6 `.dbf` de [F9QE5D](https://doi.org/10.57745/F9QE5D) nommés par leur
+identifiant Recherche Data Gouv (JJA et DJF, RCP 8.5, 3 horizons) — le lecteur dBASE est
+intégré au script, sans dépendance.
 
 ## Données embarquées
 

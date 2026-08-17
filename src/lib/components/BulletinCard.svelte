@@ -71,8 +71,17 @@
 		</div>
 		<div class="gauges">
 			<div class="g">
-				<div class="l">Nappe {#if stats.observed.nappe}<i class="dot" title="mesuré (Hub'Eau)"></i>{/if}</div>
+				<div class="l">
+					{stats.nappeIsRecharge ? 'Recharge été' : 'Nappe'}
+					{#if stats.observed.nappe}<i class="dot" title="niveau mesuré (Hub'Eau)"></i>
+					{:else if stats.nappeIsRecharge}<span class="sub">potentielle</span>{/if}
+				</div>
 				<div class="v">{fmtPct(stats.nappe)}</div>
+				{#if stats.nappeBand}
+					<div class="band" title="enveloppe des 17 modèles climatiques (modèle RECHARGE, Explore2)">
+						{fmtPct(stats.nappeBand.lo)} … {fmtPct(stats.nappeBand.hi)}
+					</div>
+				{/if}
 			</div>
 			<div class="g">
 				<div class="l">
