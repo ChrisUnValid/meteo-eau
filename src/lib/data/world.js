@@ -103,26 +103,8 @@ export function countryAt(WORLD, lonlat) {
 	return WORLD.features.find((ft) => geoContains(ft, lonlat)) || null;
 }
 
-// Noms français (~95 pays), repli sur le nom anglais du GeoJSON.
-// ⚠ Acte 2 : compléter ou remplacer par une lib i18n.
-const COUNTRY_FR = {
-	FRA:'France', ESP:'Espagne', PRT:'Portugal', ITA:'Italie', DEU:'Allemagne', GBR:'Royaume-Uni',
-	IRL:'Irlande', BEL:'Belgique', NLD:'Pays-Bas', CHE:'Suisse', AUT:'Autriche', POL:'Pologne',
-	CZE:'Tchéquie', GRC:'Grèce', TUR:'Turquie', NOR:'Norvège', SWE:'Suède', FIN:'Finlande',
-	DNK:'Danemark', ISL:'Islande', RUS:'Russie', UKR:'Ukraine', ROU:'Roumanie', BGR:'Bulgarie',
-	HUN:'Hongrie', SRB:'Serbie', HRV:'Croatie', MAR:'Maroc', DZA:'Algérie', TUN:'Tunisie',
-	LBY:'Libye', EGY:'Égypte', SAU:'Arabie saoudite', ARE:'Émirats arabes unis', QAT:'Qatar',
-	KWT:'Koweït', IRQ:'Irak', IRN:'Iran', ISR:'Israël', JOR:'Jordanie', LBN:'Liban', SYR:'Syrie',
-	YEM:'Yémen', OMN:'Oman', PAK:'Pakistan', IND:'Inde', CHN:'Chine', JPN:'Japon', KOR:'Corée du Sud',
-	IDN:'Indonésie', AUS:'Australie', NZL:'Nouvelle-Zélande', USA:'États-Unis', CAN:'Canada',
-	MEX:'Mexique', BRA:'Brésil', ARG:'Argentine', CHL:'Chili', PER:'Pérou', COL:'Colombie',
-	VEN:'Venezuela', BOL:'Bolivie', ZAF:'Afrique du Sud', NGA:'Nigeria', ETH:'Éthiopie',
-	KEN:'Kenya', TZA:'Tanzanie', SEN:'Sénégal', MLI:'Mali', NER:'Niger', TCD:'Tchad',
-	SDN:'Soudan', SOM:'Somalie', MDG:'Madagascar', COD:'RD Congo', CMR:'Cameroun',
-	CIV:"Côte d'Ivoire", GHA:'Ghana', MRT:'Mauritanie', BFA:'Burkina Faso', AFG:'Afghanistan',
-	KAZ:'Kazakhstan', UZB:'Ouzbékistan', TKM:'Turkménistan', MNG:'Mongolie', THA:'Thaïlande',
-	VNM:'Viêt Nam', MMR:'Birmanie', BGD:'Bangladesh', LKA:'Sri Lanka', NPL:'Népal',
-	PHL:'Philippines', MYS:'Malaisie', GEO:'Géorgie', ARM:'Arménie', AZE:'Azerbaïdjan',
-	CYP:'Chypre', GRL:'Groenland', CUB:'Cuba'
-};
+// Noms français des pays : dictionnaire généré (Intl.DisplayNames / CLDR),
+// cf. scripts/build-country-names.mjs. Repli sur le nom anglais du fond de carte,
+// puis sur le code ISO — en pratique les 182 pays du globe sont couverts.
+import { COUNTRY_FR } from './countries-fr.js';
 export const countryLabel = (f) => COUNTRY_FR[f.id] || (f.properties && f.properties.name) || f.id;

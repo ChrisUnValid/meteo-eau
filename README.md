@@ -116,9 +116,8 @@ projection), et tout département sans données réelles suffisantes (repli arch
 
 ## Dette restante
 
-1. Compléter les noms de pays FR (~95 couverts, repli sur le nom anglais).
-2. Carte OG côté serveur (edge function) pour le partage social sans action utilisateur.
-3. Jours de restriction projetés : encore par archétype (les arrêtés ne se projettent pas,
+1. Carte OG côté serveur (edge function) pour le partage social sans action utilisateur.
+2. Jours de restriction projetés : encore par archétype (les arrêtés ne se projettent pas,
    il faudrait un modèle reliant étiage et décision préfectorale).
 
 ## Régénérer les données
@@ -129,6 +128,7 @@ python3 scripts/build-restrictions.py <historique.zip>   # arrêtés VigiEau
 node scripts/build-explore2.mjs <dir>                    # projections de débits
 node scripts/build-recharge.mjs <dir-dbf>                # projections de recharge
 node scripts/build-aqueduct.mjs <rankings.xlsx>          # stress hydrique mondial
+node scripts/build-country-names.mjs                     # noms de pays en français
 ```
 
 Le dernier attend dans `<dir>` : `qmna/*.parquet` (les 108 fichiers `delta-QMNA_summer` de
