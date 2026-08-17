@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { app, geo, Y0, SPAN } from '$lib/state.svelte.js';
-	import { rewindWorld, countHighStress } from '$lib/data/world.js';
+	import { rewindWorld, countHighStress, loadAqueduct } from '$lib/data/world.js';
 	import { loadReal } from '$lib/data/series.js';
 	import Globe from '$lib/components/Globe.svelte';
 	import FranceMap from '$lib/components/FranceMap.svelte';
@@ -18,7 +18,8 @@
 		const [depts, world] = await Promise.all([
 			fetch('/data/depts.geojson').then((r) => r.json()),
 			fetch('/data/world.geojson').then((r) => r.json()),
-			loadReal() // observations Hub'Eau — repli silencieux sur l'archétype si absent
+			loadReal(), // observations Hub'Eau — repli silencieux sur l'archétype si absent
+			loadAqueduct() // stress hydrique mondial WRI Aqueduct
 		]);
 		geo.DEPTS = depts;
 		geo.WORLD = rewindWorld(world);
@@ -51,7 +52,7 @@
 		return `radial-gradient(ellipse at 60% 40%, rgb(${c2}) 0%, rgb(${c1}) 70%)`;
 	});
 
-	const worldCount = $derived(app.geoReady ? countHighStress(geo.WORLD, app.year) : 0);
+	const worldCount = $derived(app.geoReady ? countHighStress(app.year) : 0);
 
 	function onCountryPick(f) {
 		app.countryId = f ? f.id : null;
@@ -83,7 +84,10 @@
 		<div class="worldstat">
 			<div class="h">Le monde en {app.year}</div>
 			<div class="n">{worldCount}</div>
-			<div class="l">pays en stress hydrique élevé — fais tourner le globe, clique un pays</div>
+			<div class="l">
+				pays où plus de 40 % de l'eau disponible est déjà prélevée
+				{#if app.year <= 2020}<span class="ref">— référence WRI 1979-2019</span>{/if}
+			</div>
 		</div>
 		<button
 			class="rotBtn"
@@ -97,9 +101,9 @@
 	<CountryCard />
 
 	<div class="legend">
-		stress hydrique simulé
+		stress hydrique · WRI Aqueduct
 		<div class="bar"></div>
-		<div class="lr"><span>faible</span><span>critique</span></div>
+		<div class="lr"><span>&lt;10 %</span><span>&gt;80 % prélevé</span></div>
 	</div>
 
 	<div class="toggle">
@@ -148,7 +152,8 @@
 	.worldstat { position: fixed; top: 22px; right: 24px; text-align: right; z-index: 5; }
 	.worldstat .h { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #6f8898; margin-bottom: 6px; }
 	.worldstat .n { font-size: 62px; font-weight: 900; color: #ffb347; line-height: 1; font-variant-numeric: tabular-nums; }
-	.worldstat .l { font-size: 12px; color: #b7c9d5; max-width: 230px; line-height: 1.4; margin-top: 5px; margin-left: auto; }
+	.worldstat .l { font-size: 12px; color: #b7c9d5; max-width: 250px; line-height: 1.4; margin-top: 5px; margin-left: auto; }
+	.worldstat .ref { color: #6f8898; }
 	.rotBtn {
 		position: fixed; top: 168px; right: 24px; z-index: 5;
 		background: rgba(11, 20, 28, 0.92); border: 1px solid #2a4150; color: #8fa6b4;
@@ -164,7 +169,7 @@
 	}
 	.legend .bar {
 		width: 136px; height: 7px; border-radius: 4px; margin: 7px 0 3px;
-		background: linear-gradient(90deg, #1d6e64, #b98f3e, #a8481f);
+		background: linear-gradient(90deg, #1d6e64, #3c8a63 20%, #c8a03f 40%, #d9722f 60%, #b8431f 80%, #8f2d16);
 	}
 	.legend .lr { display: flex; justify-content: space-between; }
 

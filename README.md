@@ -93,17 +93,32 @@ observées** du département : pas de saut au passage observé → projeté.
 > Nuance d'indicateur : l'observé mesure le débit *moyen* de juin-août, Explore2 le débit
 > mensuel *minimal* d'été — deux mesures d'étiage proches mais pas identiques.
 
+**Le monde : WRI Aqueduct 4.0.** `scripts/build-aqueduct.mjs` extrait les
+[classements pays](https://www.wri.org/data/aqueduct-40-country-rankings) (CC BY 4.0,
+Kuzma et al. 2023) : indicateur `bws` — la part de la ressource disponible qui est
+prélevée — pondéré par la demande totale, pour 164 pays. La référence Aqueduct est une
+moyenne **1979-2019**, donc constante sur tout le passé du bulletin (aucune série annuelle
+n'existe) ; le futur suit le scénario *business as usual* aux horizons 2030 / 2050 / 2080,
+et la fiche pays montre aussi la fourchette optimiste/pessimiste de 2050. Les 20 pays sans
+donnée (Antarctique, Groenland, micro-États) sont **grisés**, jamais estimés.
+
+> Le compteur retombe exactement sur les chiffres publiés par le WRI : **47 pays** en
+> stress élevé en référence, **51 en 2050**. Il est calculé sur les 164 pays d'Aqueduct,
+> pas sur les polygones du fond de carte, dont une vingtaine manquent.
+>
+> **Le stress hydrique n'est pas l'aridité.** L'indicateur rapporte les prélèvements
+> humains à la ressource : le Tchad, en plein Sahel, est classé en stress *faible* parce
+> qu'on y prélève peu, tandis que la Belgique ou l'Inde sont en stress élevé. La version
+> simulée de ce projet se trompait précisément là-dessus.
+
 **Toujours simulé** : les jours de restriction hors 2012-aujourd'hui (avant 2012 et en
-projection), l'indice mondial (inspiré des catégories
-[WRI Aqueduct](https://www.wri.org/aqueduct), calibré sur « 51 pays sur 164 en stress
-élevé en 2050 »), et tout département sans données réelles suffisantes (repli archétype).
+projection), et tout département sans données réelles suffisantes (repli archétype).
 
 ## Dette restante
 
-1. Remplacer l'indice mondial simulé par les données WRI Aqueduct réelles par pays.
-2. Compléter les noms de pays FR (~95 couverts, repli anglais).
-3. Carte OG côté serveur (edge function) pour le partage social sans action utilisateur.
-4. Jours de restriction projetés : encore par archétype (les arrêtés ne se projettent pas,
+1. Compléter les noms de pays FR (~95 couverts, repli sur le nom anglais).
+2. Carte OG côté serveur (edge function) pour le partage social sans action utilisateur.
+3. Jours de restriction projetés : encore par archétype (les arrêtés ne se projettent pas,
    il faudrait un modèle reliant étiage et décision préfectorale).
 
 ## Régénérer les données
@@ -113,6 +128,7 @@ node scripts/build-data.mjs                              # Hub'Eau (débits, nap
 python3 scripts/build-restrictions.py <historique.zip>   # arrêtés VigiEau
 node scripts/build-explore2.mjs <dir>                    # projections de débits
 node scripts/build-recharge.mjs <dir-dbf>                # projections de recharge
+node scripts/build-aqueduct.mjs <rankings.xlsx>          # stress hydrique mondial
 ```
 
 Le dernier attend dans `<dir>` : `qmna/*.parquet` (les 108 fichiers `delta-QMNA_summer` de
@@ -121,7 +137,9 @@ Le dernier attend dans `<dir>` : `qmna/*.parquet` (les 108 fichiers `delta-QMNA_
 ([YZNENQ](https://doi.org/10.57745/YZNENQ)). Lecture parquet : `npm i --no-save hyparquet`.
 Le dernier attend les 6 `.dbf` de [F9QE5D](https://doi.org/10.57745/F9QE5D) nommés par leur
 identifiant Recherche Data Gouv (JJA et DJF, RCP 8.5, 3 horizons) — le lecteur dBASE est
-intégré au script, sans dépendance.
+intégré au script, sans dépendance. Aqueduct : le `.xlsx` de
+`files.wri.org/aqueduct/aqueduct-4-0-country-rankings.zip`, lu sans dépendance non plus
+(un xlsx est un zip de XML).
 
 ## Données embarquées
 

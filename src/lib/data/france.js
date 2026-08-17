@@ -6,10 +6,14 @@ import { DEPT_TO_ARCH } from './archetypes.js';
 import { statsAt } from './series.js';
 import { app, geo, THIS_YEAR } from '$lib/state.svelte.js';
 
-export const stressColor = scaleLinear()
-	.domain([0, 0.35, 0.62, 1])
-	.range(['#1d6e64', '#5f8f57', '#c8a03f', '#a8481f'])
+// Échelle du globe, calée sur les 5 catégories du WRI (score 0-5 ramené sur 0-1) :
+// faible <0,2 · faible-moyen 0,2-0,4 · moyen-élevé 0,4-0,6 · élevé 0,6-0,8 · extrême >0,8
+const stressScale = scaleLinear()
+	.domain([0, 0.2, 0.4, 0.6, 0.8, 1])
+	.range(['#1d6e64', '#3c8a63', '#c8a03f', '#d9722f', '#b8431f', '#8f2d16'])
 	.clamp(true);
+const NO_DATA = '#3a4a55'; // pays non couverts par Aqueduct : gris, jamais inventé
+export const stressColor = (v) => (v == null ? NO_DATA : stressScale(v));
 
 // Échelle France : les écarts utiles sont dans le bas de la plage,
 // on l'étire pour que Bretagne et Languedoc ne soient pas du même vert.
