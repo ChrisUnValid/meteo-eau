@@ -18,14 +18,15 @@
 	const statsB = $derived(app.compare ? statsAt(app.compare.dept, app.year) : null);
 	const jB = $derived(statsB ? statsB.jours : 0);
 	const lvlB = $derived(vigiOf(jB));
-	const isObs = $derived(stats.observed.nappe || stats.observed.debit);
-	const provenance = $derived(
-		isObs
-			? `données observées · Hub'Eau (${(stats.stations?.debit || 0) + (stats.stations?.nappe || 0)} stations)`
-			: stats.anchored
-				? 'projection ancrée sur l’observé'
-				: 'projection type'
-	);
+	const isObs = $derived(stats.observed.nappe || stats.observed.debit || stats.observed.jours);
+	const provenance = $derived.by(() => {
+		if (!isObs) return stats.anchored ? 'projection ancrée sur l’observé' : 'projection type';
+		const src = [];
+		if (stats.observed.nappe || stats.observed.debit)
+			src.push(`Hub'Eau (${(stats.stations?.debit || 0) + (stats.stations?.nappe || 0)} stations)`);
+		if (stats.observed.jours) src.push('arrêtés VigiEau');
+		return `données observées · ${src.join(' + ')}`;
+	});
 	const phrase = $derived(
 		app.compare
 			? duelPhrase(stats, statsB, app.year, app.communeName, app.compare.name)
@@ -49,7 +50,7 @@
 	{#if !app.compare}
 		<div class="heronum">
 			<div class="n">{j}</div>
-			<div class="u">jours sans arroser cet été-là</div>
+			<div class="u">jours sans arroser cet été-là{#if stats.observed.jours}<i class="dot" title="arrêtés observés (Propluvia / VigiEau)"></i>{/if}</div>
 		</div>
 		<div class="vigi">
 			<div class="lab">
@@ -79,7 +80,7 @@
 			<div class="duelcol a">
 				<div class="who">{app.communeName}</div>
 				<div class="dn">{j}</div>
-				<div class="du">jours sans arroser</div>
+				<div class="du">jours sans arroser{#if stats.observed.jours}<i class="dot"></i>{/if}</div>
 				<div class="minibar"><i style="width:{Math.min(100, (j / MAX_JOURS) * 100)}%; background:{lvl[1]}"></i></div>
 				<div class="dv"><span>Nappe{#if stats.observed.nappe}<i class="dot"></i>{/if}</span><b>{fmtPct(stats.nappe)}</b></div>
 				<div class="dv"><span>Débit été{#if stats.observed.debit}<i class="dot"></i>{/if}</span><b>{fmtPct(stats.debit)}</b></div>
@@ -88,7 +89,7 @@
 			<div class="duelcol b">
 				<div class="who">{app.compare.name}</div>
 				<div class="dn">{jB}</div>
-				<div class="du">jours sans arroser</div>
+				<div class="du">jours sans arroser{#if statsB.observed.jours}<i class="dot"></i>{/if}</div>
 				<div class="minibar"><i style="width:{Math.min(100, (jB / MAX_JOURS) * 100)}%; background:{lvlB[1]}"></i></div>
 				<div class="dv"><span>Nappe{#if statsB.observed.nappe}<i class="dot"></i>{/if}</span><b>{fmtPct(statsB.nappe)}</b></div>
 				<div class="dv"><span>Débit été{#if statsB.observed.debit}<i class="dot"></i>{/if}</span><b>{fmtPct(statsB.debit)}</b></div>

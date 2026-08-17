@@ -8,15 +8,15 @@ export const THIS_YEAR = new Date().getFullYear();
 
 export const app = $state({
 	year: THIS_YEAR,
-	birth: 1992,
-	cp: '30000',
-	dept: '30',
-	communeName: 'Nîmes',
-	lonlat: [4.36, 43.84],
+	birth: 1991,
+	cp: '19240',
+	dept: '19',
+	communeName: 'Allassac',
+	lonlat: [1.4609, 45.2573],
 	view: 'world', // 'world' | 'france'
 	compare: null, // { dept, name, lonlat } | null
 	countryId: null, // id alpha-3 du pays sélectionné sur le globe
-	autoRotate: true, // pause/lecture de la rotation du globe (bouton ⏸)
+	autoRotate: false, // rotation du globe : immobile par défaut, lancée par le bouton ▶
 	geoReady: false,
 	toast: null // { label, at } — années remarquables
 });

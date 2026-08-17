@@ -5,7 +5,8 @@
 	import * as d3 from 'd3';
 	import { app, geo } from '$lib/state.svelte.js';
 	import { franceColor, deptStress, applyLocation } from '$lib/data/france.js';
-	import { DEPT_TO_ARCH, joursAt } from '$lib/data/archetypes.js';
+	import { DEPT_TO_ARCH } from '$lib/data/archetypes.js';
+	import { statsAt } from '$lib/data/series.js';
 
 	let svgEl;
 	let tip = $state({ show: false, x: 0, y: 0, nom: '', jours: 0, arch: '' });
@@ -23,11 +24,12 @@
 			.attr('class', 'dept').attr('d', fpath)
 			.on('mousemove', (e, f) => {
 				const a = DEPT_TO_ARCH[f.properties.code];
+				const s = a ? statsAt(f.properties.code, app.year) : null;
 				tip = {
 					show: true, x: e.clientX + 16, y: e.clientY - 12,
 					nom: f.properties.nom,
-					jours: a ? joursAt(a, app.year) : 0,
-					arch: a ? a.label : ''
+					jours: s ? s.jours : 0,
+					arch: s && s.observed.jours ? 'arrêtés observés · VigiEau' : a ? a.label : ''
 				};
 			})
 			.on('mouseleave', () => (tip.show = false))

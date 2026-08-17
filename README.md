@@ -38,8 +38,15 @@ et produit `static/data/real.json`, embarqué dans le site :
   convertie en percentile dans l'historique de la station (indice type IPS), exprimée en
   écart au médian (±50), moyenne entre stations.
 
+- **Jours sans arroser (2012 →)** : historique quotidien réel des arrêtés de restriction
+  (Propluvia puis VigiEau, jeu « Donnée Sécheresse - VigiEau » sur data.gouv.fr, ~11 Go
+  traités en streaming par `scripts/build-restrictions.py`). Par département et par été :
+  moyenne par commune du nombre de jours de juin-août avec au moins un milieu (eau potable,
+  souterraine, superficielle) au niveau alerte, alerte renforcée ou crise. Avant 2012 et
+  pour le futur, la valeur reste modelée.
+
 Un point turquoise ● dans le bulletin marque chaque valeur mesurée. Régénérer :
-`node scripts/build-data.mjs`.
+`node scripts/build-data.mjs` puis `python3 scripts/build-restrictions.py <historique.zip>`.
 
 **Futur : une projection raccordée à l'observé.** Les trajectoires suivent les ordres de
 grandeur publiés par [Explore2](https://www.drias-eau.fr) (INRAE / Météo-France — débits
@@ -48,8 +55,8 @@ d'été −20 % national en 2100, −40 % Sud-Ouest, recharge en baisse au sud-e
 moyenne des 5 dernières années observées** du département : pas de saut au passage
 observé → projeté.
 
-**Toujours simulé** : les jours de restriction (construction narrative de l'archétype,
-les arrêtés historiques ne sont pas intégrés), l'indice mondial (inspiré des catégories
+**Toujours simulé** : les jours de restriction hors 2012-aujourd'hui (avant 2012 et en
+projection), l'indice mondial (inspiré des catégories
 [WRI Aqueduct](https://www.wri.org/aqueduct), calibré sur « 51 pays sur 164 en stress
 élevé en 2050 »), et tout département sans données réelles suffisantes (repli archétype).
 
@@ -59,10 +66,9 @@ les arrêtés historiques ne sont pas intégrés), l'indice mondial (inspiré de
    changement des 540 chaînes de modélisation
    ([doi:10.57745/8CZUWN](https://doi.org/10.57745/8CZUWN), NetCDF, licence Etalab) —
    remplacera l'ancrage par archétype.
-2. Intégrer l'historique réel des arrêtés de restriction (Propluvia/VigiEau).
-3. Remplacer l'indice mondial simulé par les données WRI Aqueduct réelles par pays.
-4. Compléter les noms de pays FR (~95 couverts, repli anglais).
-5. Carte OG côté serveur (edge function) pour le partage social sans action utilisateur.
+2. Remplacer l'indice mondial simulé par les données WRI Aqueduct réelles par pays.
+3. Compléter les noms de pays FR (~95 couverts, repli anglais).
+4. Carte OG côté serveur (edge function) pour le partage social sans action utilisateur.
 
 ## Données embarquées
 

@@ -69,11 +69,11 @@
 			60, 552
 		);
 
-		const isObs = stats.observed.nappe || stats.observed.debit;
+		const isObs = stats.observed.nappe || stats.observed.debit || stats.observed.jours;
 		cx.fillStyle = 'rgba(232,238,242,.55)'; cx.font = '500 19px ' + F;
 		cx.fillText(
 			isObs
-				? "Nappe et débit : mesures observées (Hub'Eau) · restrictions : projection calibrée Explore2"
+				? "Données observées : Hub'Eau (nappe, débit) · VigiEau/Propluvia (restrictions)"
 				: "Projection calibrée sur Explore2 (INRAE / Météo-France), ancrée sur les mesures Hub'Eau",
 			60, 600
 		);

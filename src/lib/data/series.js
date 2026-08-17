@@ -46,11 +46,20 @@ export function statsAt(dept, year) {
 		nappe: lerpSeries(arch.series.nappe, year),
 		debit: lerpSeries(arch.series.debit, year),
 		temp: lerpSeries(arch.series.temp, year),
-		observed: { nappe: false, debit: false },
+		observed: { nappe: false, debit: false, jours: false },
 		anchored: false,
 		stations: real ? real.stations : null
 	};
-	if (!real || !real.lastYear) return out;
+	if (!real) return out;
+
+	// jours de restriction observés (historique Propluvia → VigiEau, quotidien par commune)
+	const jm = real.joursMeta;
+	if (jm && year >= jm.firstYear && year <= jm.lastYear && real.jours?.[year] != null) {
+		out.jours = Math.round(real.jours[year]);
+		out.observed.jours = true;
+	}
+
+	if (!real.lastYear) return out;
 
 	if (year <= real.lastYear) {
 		const n = real.nappe?.[year];

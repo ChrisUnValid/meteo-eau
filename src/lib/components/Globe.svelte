@@ -123,7 +123,7 @@
 			if (app.view !== 'world') return;
 			if (ts - lastFrame < 33) return;
 			lastFrame = ts;
-			if (!dragging && app.autoRotate) { idle++; if (idle > 45) { rot += 0.18; dirty = true; } }
+			if (!dragging && app.autoRotate) { idle++; if (idle > 8) { rot += 0.18; dirty = true; } }
 			if (!dirty) return;
 			dirty = false;
 

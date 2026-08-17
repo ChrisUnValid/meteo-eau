@@ -2,7 +2,8 @@
 // couleurs de la carte de France, enrichissement geo.api.gouv.fr.
 
 import { scaleLinear, geoCentroid } from 'd3';
-import { DEPT_TO_ARCH, joursAt } from './archetypes.js';
+import { DEPT_TO_ARCH } from './archetypes.js';
+import { statsAt } from './series.js';
 import { app, geo, THIS_YEAR } from '$lib/state.svelte.js';
 
 export const stressColor = scaleLinear()
@@ -17,10 +18,11 @@ export const franceColor = scaleLinear()
 	.range(['#1d6e64', '#2f8a6a', '#7fa85c', '#c8a03f', '#d9722f', '#a8481f'])
 	.clamp(true);
 
+// La carte se colore avec les jours de restriction — observés quand ils existent
+// (2012+, arrêtés réels), modelés sinon.
 export function deptStress(code, y) {
-	const a = DEPT_TO_ARCH[code];
-	if (!a) return 0;
-	return Math.max(0, Math.min(1, joursAt(a, y) / 70));
+	if (!DEPT_TO_ARCH[code]) return 0;
+	return Math.max(0, Math.min(1, statsAt(code, y).jours / 70));
 }
 
 export function archOf(dept) {
